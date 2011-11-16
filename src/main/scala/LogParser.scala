@@ -27,12 +27,11 @@ object LogParser extends RegexParsers
             { case t ~ _ => TIME_PARSER.parseDateTime(t) }
   val h1_text = "end h1:"
   val h2_text = "h2:"
-  val h1 = timestamp ~ h1_text ~ linechars ~ eol ^^
-            { case t ~ _ ~ title ~ _ => (t,title) }
-  val h2 = timestamp ~ h2_text ~ linechars ~ eol ^^
-            { case t ~ _ ~ title ~ _ => (t,title) }
-  val genline = timestamp ~ (not (h1_text | h2_text)) ~ linechars ~ eol ^^
-            { case t ~ _ ~ _ ~ _ => t }
+  val h1 = (timestamp <~ h1_text) ~ linechars <~ eol ^^
+            { case t ~ title => (t,title) }
+  val h2 = (timestamp <~ h2_text) ~ linechars <~ eol ^^
+            { case t ~ title => (t,title) }
+  val genline = timestamp <~ (not (h1_text | h2_text)) <~ linechars <~ eol
   val target = h2 ~ (genline*) ^^
             { case ((start,title)) ~ times =>
               Target(title, start, times.lastOption.getOrElse(start)) }

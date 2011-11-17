@@ -22,13 +22,16 @@ object LogParser extends RegexParsers
   override def skipWhitespace = false
 
   val linechars = ("[^\n]*"r)
-  val eol = "\n"
+  val eol:Parser[String] = "\n"
   val timestamp =  ("""\d\d:\d\d"""r) ~ " " ^^
             { case t ~ _ => TIME_PARSER.parseDateTime(t) }
-  val h1_text = "end h1:"
-  val h2_text = "h2:"
-  val h1 = (timestamp <~ h1_text) ~ linechars <~ eol ^^
-            { case t ~ title => (t,title) }
+  val h1_text:Parser[String] = "end h1:"
+  val h2_text:Parser[String] = "h2:"
+  // as an example, do h1 in monadic style
+  val h1 = for (t <- timestamp;
+                _ <- h1_text;
+                title <- linechars;
+                _ <- eol) yield (t,title)
   val h2 = (timestamp <~ h2_text) ~ linechars <~ eol ^^
             { case t ~ title => (t,title) }
   val genline = timestamp <~ (not (h1_text | h2_text)) <~ linechars <~ eol

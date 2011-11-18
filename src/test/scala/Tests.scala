@@ -44,6 +44,31 @@ class Tests extends LogParser with FlatSpec with ShouldMatchers
 10:29 [some stuff] - yeah baby        
 """) should equal(S3("the:first:h3:",time(10,27),time(10,29)))     
   }
+  
+  "The LogParser" should "parse heading 2's" in {
+    implicit val parserToTest = h2
+parsing("""10:24 [some stuff] - ==
+10:24 [some stuff] - [==]the first h2
+""") should equal((time(10,24), "the first h2"))
+  }
+
+  "The LogParser" should "parse section 2's" in {
+    implicit val parserToTest = s2
+
+    parsing("""10:24 [some stuff] - ==
+10:24 [some stuff] - [==]the first h2
+10:27 [some stuff] - some more filler
+""") should equal (S2("the first h2", time(10,24), time(10,24), List()))
+
+    parsing("""10:24 [some stuff] - ==
+10:24 [some stuff] - [==]the first h2
+10:27 [some stuff] - some more filler
+10:27 [some stuff] - the-first-h3:
+10:29 [some stuff] - yeah baby
+10:35 [some stuff] - come on let's code
+""") should equal (S2("the first h2", time(10,24), time(10,35),
+                    List(S3("the-first-h3:", time(10,27),time(10,35)))))
+  }
 
 }
 

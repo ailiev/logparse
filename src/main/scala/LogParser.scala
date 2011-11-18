@@ -24,10 +24,6 @@ trait LogParser extends RegexParsers
 
   def time (h:Int,m:Int) = new DateTime(0).withHourOfDay(h).withMinuteOfHour(m)
 
-  def test(in:String, parser: => Parser[Node]) = {
-//    if (parse(parser, in))
-  }
-
 //  override val whiteSpace = "\n"r
   override def skipWhitespace = false
 
@@ -56,11 +52,11 @@ trait LogParser extends RegexParsers
   val h1_end = (prefix <~ h1_end_text) ~ linechars ^^
             { case t ~ title => (t, title) }
   val h2 = (prefix <~ h2_start_line1 <~ eol <~
-            prefix <~ h2_start_line2) ~ linechars ^^
+            prefix <~ h2_start_line2) ~ linechars <~ eol ^^
             { case t ~ title => (t,title) }
   val h3 = prefix ~ (".*:"r) <~ eol ^^
             { case t ~ title => (t,title) }
-  val genline = prefix <~ (noneOf(keywords)) <~ linechars <~ eol
+  val genline = prefix <~ (noneOf(regex(".*:"r) :: keywords)) <~ linechars <~ eol
   val s3 = h3 ~ (genline*) ^^
             { case ((start,title)) ~ times =>
               S3(title, start, times.lastOption.getOrElse(start)) }

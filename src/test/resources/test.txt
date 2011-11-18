@@ -1,9 +1,26 @@
-10:24 h2: subsect 1
-10:24 jdjsc kdks
-10:24 jkdlslow
-10:27 h2: target 2
-10:29 end h1: this is module 1
-10:30 h2: target 2.1
-10:33 kuku jaja
-10:35 hfd kf hvfk
-10:42 end h1: module 2
+10:24 [some stuff] - some filler
+10:24 [some stuff] - more filler
+10:24 [some stuff] - => the first h1
+10:24 [some stuff] - jdjsc kdk
+10:24 [some stuff] - jkdlslow
+10:24 [some stuff] - =< the first h1
+10:24 [some stuff] - some filler
+10:24 [some stuff] - => the second h1
+10:27 [some stuff] - some more filler
+10:24 [some stuff] - => inside h1
+10:24 [some stuff] - ==
+10:24 [some stuff] - [==] the first h2
+10:27 [some stuff] - some more filler
+10:27 [some stuff] - the-first-h3:
+10:29 [some stuff] - yeah baby
+10:29 [some stuff] - come on let's code
+10:30 [some stuff] - the-second-h3:
+10:33 [some stuff] - we're off
+10:24 [some stuff] - ==
+10:24 [some stuff] - [==] the second h2
+10:35 [some stuff] - another-h3:
+10:42 [some stuff] - doing stuff
+10:42 [some stuff] - more stuff
+10:42 [some stuff] - =< inside h1
+10:42 [some stuff] - more filler
+10:42 [some stuff] - =< the second h1

@@ -5,13 +5,17 @@ import java.{io=>jio}
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTime,MutableDateTime}
 import org.joda.time.format.DateTimeFormatter
+import org.joda.time.Period
+import org.joda.time.Duration
+import scala.util.parsing.input.Positional
 
-sealed abstract class Node(name:String, start:DateTime, end:DateTime)
-case class S1(name:String, start:DateTime, end:DateTime, children:List[Node])
+sealed abstract class Node(name:String, val start:DateTime, val end:DateTime)
+  extends Positional
+case class S1(name:String, override val start:DateTime, override val end:DateTime, children:List[Node])
   extends Node(name,start,end)
-case class S2(name:String, start:DateTime, end:DateTime, children:List[S3])
+case class S2(name:String, override val start:DateTime, override val end:DateTime, children:List[S3])
   extends Node(name,start,end)
-case class S3(name:String, start:DateTime, end:DateTime)
+case class S3(name:String, override val start:DateTime, override val end:DateTime)
   extends Node(name,start,end)
 
 trait LogParser extends RegexParsers with DateTimeParsers
@@ -36,12 +40,9 @@ trait LogParser extends RegexParsers with DateTimeParsers
     
     nodes.flatMap(walk1)
   }
-  
-  def main(args:Array[String]) = {
-    val in = """10:27 [some stuff] - the-first-h3:
-10:29 [some stuff] - yeah baby
-10:29 [some stuff] - come on let's code"""
-//    test (in, s3, S3("the-first-h3:",time(10,27),time(10,29)))
+
+  def duration(n:Node) : Long = {
+    new Duration(n.start, n.end).getStandardSeconds()
   }
 
 //  override val whiteSpace = "\n"r
@@ -85,15 +86,30 @@ trait LogParser extends RegexParsers with DateTimeParsers
                 S2(title, start, end, s3s)
                 }
   lazy val s1_child : Parser[Node] = s1 | s2 // note not s3
-  val s1 = ((h1) <~ (genline*)) ~ (s1_child*) ~ h1_end ^^
+  val s1 = ((h1) <~ (genline*)) ~ (s1_child*) ~ h1_end <~ (genline*) ^^
             { case ((t,title)) ~ s2s ~ ((t_end,title_end)) =>
               if (title_end != title) throw new RuntimeException("Parse error")
               else S1(title, t, t_end, s2s) }
-  val all = ((genline*) ~> s1+) <~ (genline*)
+  val all = ((genline*) ~> positioned(s1)+) <~ (genline*)
 
   def any[E] (ps:TraversableOnce[Parser[E]]) = ps.reduce(_ | _)
   def noneOf[E](ps:TraversableOnce[Parser[E]]) = not (any(ps))
 //  def noneOf = (any _) andThen (not _)
 
 
+}
+
+object LogParser extends LogParser
+{
+  def main(args:Array[String]) = {
+    val parsed = parse(phrase(all), new jio.FileReader(args(0)))
+    parsed match {
+      case Success(nodes, _) => {
+        val flat = flatten(nodes).sortBy(path => duration(path.head))
+        System.out.println(flat.mkString("\n"))
+      }
+      case Failure(msg, _) => System.err.println("Failed to parse: " + msg)
+    } 
+
+  }
 }

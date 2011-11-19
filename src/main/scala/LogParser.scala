@@ -6,10 +6,13 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.{DateTime,MutableDateTime}
 import org.joda.time.format.DateTimeFormatter
 
-sealed trait Node
-case class S1(name:String, start:DateTime, end:DateTime, children:List[Node]) extends Node
-case class S2(name:String, start:DateTime, end:DateTime, children:List[S3]) extends Node
-case class S3(name:String, start:DateTime, end:DateTime) extends Node
+sealed abstract class Node(name:String, start:DateTime, end:DateTime)
+case class S1(name:String, start:DateTime, end:DateTime, children:List[Node])
+  extends Node(name,start,end)
+case class S2(name:String, start:DateTime, end:DateTime, children:List[S3])
+  extends Node(name,start,end)
+case class S3(name:String, start:DateTime, end:DateTime)
+  extends Node(name,start,end)
 
 trait LogParser extends RegexParsers with DateTimeParsers
 {

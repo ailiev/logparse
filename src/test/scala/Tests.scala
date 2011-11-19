@@ -68,7 +68,7 @@ class Tests extends LogParser with FlatSpec with ShouldMatchers
   
   "The LogParser" should "parse heading 2's" in {
     implicit val parserToTest = h2
-parsing("""10:24 [some stuff] - ==
+    parsing("""10:24 [some stuff] - ==
 10:24 [some stuff] - [==]the first h2
 """) should equal((time(10,24), "the first h2"))
   }
@@ -110,6 +110,31 @@ parsing("""10:24 [some stuff] - ==
                     List(S2("the first h2", time(10,25), time(10,27),
                         List(S3("some h3:", time(10,26), time(10,27)))))))
 
+  }
+
+  val t = for (m <- 0 until 20) yield time(10,m)
+
+  "flatten" should "work" in {
+    flatten(List(S1("s1", t(0), t(1), Nil))
+        ) should equal (List(List(S1("s1", t(0), t(1), Nil))))
+
+    val s3_1 = S3("s3_1", t(2),  t(3))
+    val s3_2 = S3("s3_2", t(4),  t(6))
+    val s2   = S2("s2",   t(1),  t(6),  List(s3_1,s3_2))
+    val s2_2 = S2("s2",   t(11), t(14), Nil)    
+    val s1_1 = S1("s1",   t(0),  t(9),  List(s2))
+    val s1_2 = S1("s1",   t(10), t(15), List(s2_2))
+
+    flatten(List(s1_1, s1_2)
+    ) should equal (
+        List(List(s1_1),
+            List(s2, s1_1),
+            List(s3_1, s2, s1_1),
+            List(s3_2, s2, s1_1),
+            List(s1_2),
+            List(s2_2, s1_2)
+        )
+    )
   }
 
 }

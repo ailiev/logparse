@@ -16,6 +16,24 @@ trait LogParser extends RegexParsers with DateTimeParsers
   val TIME_PARSER =
     DateTimeFormat.forPattern("HH:mm")
 
+  def flatten(nodes:List[Node]) : List[List[Node]] = {
+    // want each element in the result to be in reverse order, eg. S3, S2, S1, S1
+    def walk1 : Node => List[List[Node]] =
+      _ match {
+        case s1@S1(_,_,_,_) => walkS1(s1)
+        case s2@S2(_,_,_,_) => walkS2(s2)
+        // no top-level S3's
+      }
+
+    def walkS1(s1:S1) : List[List[Node]] =
+      List(s1) :: s1.children.flatMap(walk1).map(_ ++ List(s1))
+
+    def walkS2(s2:S2) : List[List[Node]] =
+      List(s2) :: s2.children.map(List(_,s2))
+    
+    nodes.flatMap(walk1)
+  }
+  
   def main(args:Array[String]) = {
     val in = """10:27 [some stuff] - the-first-h3:
 10:29 [some stuff] - yeah baby

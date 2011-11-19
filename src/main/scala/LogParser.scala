@@ -11,7 +11,7 @@ case class S1(name:String, start:DateTime, end:DateTime, children:List[Node]) ex
 case class S2(name:String, start:DateTime, end:DateTime, children:List[S3]) extends Node
 case class S3(name:String, start:DateTime, end:DateTime) extends Node
 
-trait LogParser extends RegexParsers
+trait LogParser extends RegexParsers with DateTimeParsers
 {
   val TIME_PARSER =
     DateTimeFormat.forPattern("HH:mm")
@@ -30,8 +30,7 @@ trait LogParser extends RegexParsers
   
   val eol:Parser[String] = "\n"
 
-  val timestamp =  ("""\d\d:\d\d"""r) ^^
-            (TIME_PARSER.parseDateTime(_))
+  val timestamp = datetime(TIME_PARSER)
 
   val prefix = timestamp <~ " [some stuff] - "
 
@@ -64,30 +63,16 @@ trait LogParser extends RegexParsers
                 val end = s3s.lastOption.map(_.end).getOrElse(start)
                 S2(title, start, end, s3s)
                 }
-  def s1_child : Parser[Node] = s1 | s2 // note not s3
-  def s1 = ((h1) <~ (genline*)) ~ (s1_child*) ~ h1_end ^^
+  lazy val s1_child : Parser[Node] = s1 | s2 // note not s3
+  val s1 = ((h1) <~ (genline*)) ~ (s1_child*) ~ h1_end ^^
             { case ((t,title)) ~ s2s ~ ((t_end,title_end)) =>
               if (title_end != title) throw new RuntimeException("Parse error")
               else S1(title, t, t_end, s2s) }
   val all = ((genline*) ~> s1+) <~ (genline*)
 
-  def noneOf[E](ps:List[Parser[E]]) = not (ps.reduce(_ | _))
+  def any[E] (ps:TraversableOnce[Parser[E]]) = ps.reduce(_ | _)
+  def noneOf[E](ps:TraversableOnce[Parser[E]]) = not (any(ps))
+//  def noneOf = (any _) andThen (not _)
 
-  implicit def datetime(format: DateTimeFormatter): Parser[DateTime] = new Parser[DateTime] {
-    def apply(in: Input) = {
-      val source = in.source
-      val offset = in.offset
-      val start = handleWhiteSpace(source, offset)
-      val dest = new MutableDateTime(0)
-      val timeParser = format.getParser
-      val workString = source.subSequence(start, start+timeParser.estimateParsedLength).toString
-      val rc = format.parseInto(dest, workString, 0)
-      if (rc > 0) Success(dest.toDateTime(dest.getChronology), in.drop(start+rc-offset))
-      else {
-        val found = if (start == source.length()) "end of source" else "`"+source.charAt(start)+"'" 
-        Failure("string matching date/time format " + format + " expected but " + found + " found",
-            in.drop(start - offset))
-      }
-    }
-  }  
+
 }

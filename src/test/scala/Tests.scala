@@ -37,7 +37,7 @@ class Tests extends LogParser with FlatSpec with ShouldMatchers
     val TIME_PARSER =
       DateTimeFormat.forPattern("HH:mm")
 
-    implicit val parserToTest = datetime(TIME_PARSER)
+    val parserToTest = datetime(TIME_PARSER)
 
     val in = new CharSequenceReader("10:24")
     val parsed = parse(parserToTest, in)

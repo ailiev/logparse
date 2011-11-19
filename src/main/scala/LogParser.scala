@@ -65,7 +65,7 @@ trait LogParser extends RegexParsers
                 val end = s3s.lastOption.map(_.end).getOrElse(start)
                 S2(title, start, end, s3s)
                 }
-  def s1_child : Parser[Node] = s1 | s2
+  def s1_child : Parser[Node] = s1 | s2 // note not s3
   def s1 = ((h1) <~ (genline*)) ~ (s1_child*) ~ h1_end ^^
             { case ((t,title)) ~ s2s ~ ((t_end,title_end)) =>
               if (title_end != title) throw new RuntimeException("Parse error")

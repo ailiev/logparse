@@ -78,8 +78,19 @@ parsing("""10:24 [some stuff] - ==
 10:24 [some stuff] - jkdlslow
 10:32 [some stuff] - =<the first h1
 """) should equal(S1("the first h1", time(10,24), time(10,32), List()))
+
+    parsing("""10:24 [some stuff] - =>the first h1
+10:25 [some stuff] - ==
+10:25 [some stuff] - [==]the first h2
+10:26 [some stuff] - some h3:
+10:27 [some stuff] - jkdlslow
+10:32 [some stuff] - =<the first h1
+""") should equal(S1("the first h1", time(10,24), time(10,32),
+                    List(S2("the first h2", time(10,25), time(10,27),
+                        List(S3("some h3:", time(10,26), time(10,27)))))))
+
   }
-  
+
 }
 
 

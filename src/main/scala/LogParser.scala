@@ -105,7 +105,12 @@ object LogParser extends LogParser
     val parsed = parse(phrase(all), new jio.FileReader(args(0)))
     parsed match {
       case Success(nodes, _) => {
-        val flat = flatten(nodes).sortBy(path => duration(path.head))
+        val flat = flatten(nodes).
+          // pick out the S3's only
+          map(_.head).
+          filter{ case S3(_,_,_) => true; case _ => false }.
+          map(s3 => (duration(s3), s3)).
+          sortBy(_._1)  // sort by duration
         System.out.println(flat.mkString("\n"))
       }
       case Failure(msg, _) => System.err.println("Failed to parse: " + msg)

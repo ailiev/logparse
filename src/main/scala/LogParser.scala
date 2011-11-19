@@ -3,7 +3,8 @@ import scala.util.parsing.combinator.{
 }
 import java.{io=>jio}
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.DateTime
+import org.joda.time.{DateTime,MutableDateTime}
+import org.joda.time.format.DateTimeFormatter
 
 sealed trait Node
 case class S1(name:String, start:DateTime, end:DateTime, children:List[Node]) extends Node
@@ -21,8 +22,6 @@ trait LogParser extends RegexParsers
 10:29 [some stuff] - come on let's code"""
 //    test (in, s3, S3("the-first-h3:",time(10,27),time(10,29)))
   }
-
-  def time (h:Int,m:Int) = new DateTime(0).withHourOfDay(h).withMinuteOfHour(m)
 
 //  override val whiteSpace = "\n"r
   override def skipWhitespace = false
@@ -73,4 +72,22 @@ trait LogParser extends RegexParsers
   val all = ((genline*) ~> s1+) <~ (genline*)
 
   def noneOf[E](ps:List[Parser[E]]) = not (ps.reduce(_ | _))
+
+  implicit def datetime(format: DateTimeFormatter): Parser[DateTime] = new Parser[DateTime] {
+    def apply(in: Input) = {
+      val source = in.source
+      val offset = in.offset
+      val start = handleWhiteSpace(source, offset)
+      val dest = new MutableDateTime(0)
+      val timeParser = format.getParser
+      val workString = source.subSequence(start, start+timeParser.estimateParsedLength).toString
+      val rc = format.parseInto(dest, workString, 0)
+      if (rc > 0) Success(dest.toDateTime(dest.getChronology), in.drop(start+rc-offset))
+      else {
+        val found = if (start == source.length()) "end of source" else "`"+source.charAt(start)+"'" 
+        Failure("string matching date/time format " + format + " expected but " + found + " found",
+            in.drop(start - offset))
+      }
+    }
+  }  
 }

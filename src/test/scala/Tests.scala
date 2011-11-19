@@ -6,6 +6,8 @@ import scala.util.parsing.combinator.{
 import scala.util.parsing.input.CharSequenceReader
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.DateTime
 
 // inspiration for this test from
 // http://henkelmann.eu/2011/01/29/an_introduction_to_scala_parser_combinators-part_3_unit_tests
@@ -27,6 +29,25 @@ class Tests extends LogParser with FlatSpec with ShouldMatchers
 
   private def assertFail[T](input:String)(implicit p:Parser[T]) {
     evaluating(parsing(input)(p)) should produce[IllegalArgumentException]
+  }
+
+  def time (h:Int,m:Int) = new DateTime(0).withHourOfDay(h).withMinuteOfHour(m)
+
+  "The LogParser" should "parse DateTimes" in {
+    val TIME_PARSER =
+      DateTimeFormat.forPattern("HH:mm")
+
+    implicit val parserToTest = datetime(TIME_PARSER)
+
+    val in = new CharSequenceReader("10:24")
+    val parsed = parse(parserToTest, in)
+    parsed match {
+      case Success(t, rest) => {
+        t should equal(time(10,24))
+        rest.offset should equal(5)
+      }
+    }
+//    parsing("  10:24") should equal(time(10,24))
   }
 
   "The LogParser" should "parse section 3's" in {

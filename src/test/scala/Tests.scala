@@ -70,6 +70,16 @@ parsing("""10:24 [some stuff] - ==
                     List(S3("the-first-h3:", time(10,27),time(10,35)))))
   }
 
+  "The LogParser" should "parse section 1's" in {
+    implicit val parserToTest = s1
+
+    parsing("""10:24 [some stuff] - =>the first h1
+10:24 [some stuff] - jdjsc kdk
+10:24 [some stuff] - jkdlslow
+10:32 [some stuff] - =<the first h1
+""") should equal(S1("the first h1", time(10,24), time(10,32), List()))
+  }
+  
 }
 
 

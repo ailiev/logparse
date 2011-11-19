@@ -49,7 +49,7 @@ trait LogParser extends RegexParsers
                   _ <- h1_start_text;
                   title <- linechars;
                   _ <- eol) yield (t,title)
-  val h1_end = (prefix <~ h1_end_text) ~ linechars ^^
+  val h1_end = (prefix <~ h1_end_text) ~ linechars <~ eol ^^
             { case t ~ title => (t, title) }
   val h2 = (prefix <~ h2_start_line1 <~ eol <~
             prefix <~ h2_start_line2) ~ linechars <~ eol ^^

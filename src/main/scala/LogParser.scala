@@ -101,7 +101,7 @@ trait LogParser extends RegexParsers with DateTimeParsers
 
 object LogParser extends LogParser
 {
-  def main(args:Array[String]) = {
+  def main(args:Array[String]) : Unit = {
     val parsed = parse(phrase(all), new jio.FileReader(args(0)))
     parsed match {
       case Success(nodes, _) => {
@@ -113,7 +113,7 @@ object LogParser extends LogParser
           sortBy(_._1)  // sort by duration
         System.out.println(flat.mkString("\n"))
       }
-      case Failure(msg, _) => System.err.println("Failed to parse: " + msg)
+      case Failure(msg, in) => System.err.println("Parse error at %s: %s" format (in.pos, msg))
     } 
 
   }

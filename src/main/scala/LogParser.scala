@@ -75,21 +75,14 @@ trait LogParser extends RegexParsers with DateTimeParsers
   lazy val s1_child : Parser[Section] = s1 | s2 // note not s3
   val s1 = ((h1) <~ ((genline|stray_h3)*)) ~ (s1_child*) ~ h1_end <~ (genline*) >>
       { case ((t,title)) ~ s2s ~ ((t_end,title_end)) =>
-          if (title_end == title) const (S1(title, t, t_end, s2s))
-          else constfail("Mismatched s1 tags: '%s' and '%s'" format (title, title_end))
+          if (title_end == title) success (S1(title, t, t_end, s2s))
+          else err("Mismatched s1 tags: '%s' and '%s'" format (title, title_end))
       }
+
 
   val all = (genline*) ~> (s1+) <~ (genline*)
 
   // general combinators
-
-  def const[A](a:A) = new Parser[A] {
-    def apply(in:Input) = Success(a, in) 
-  }
-
-  def constfail(msg:String) = new Parser[Nothing] {
-    def apply(in:Input) = Failure(msg, in)
-  }
 
   def any[E] (ps:TraversableOnce[Parser[E]]) = ps.reduce(_ | _)
   def noneOf[E](ps:TraversableOnce[Parser[E]]) = not (any(ps))
@@ -116,7 +109,7 @@ object LogParser extends LogParser
           sortBy(_._1)  // sort by duration
         System.out.println(flat.mkString("\n"))
       }
-      case Failure(msg, in) => System.err.println("Parse error at %s: %s" format (in.pos, msg))
+      case NoSuccess(msg, in) => System.err.println("Parse error at %s: %s" format (in.pos, msg))
     } 
 
   }

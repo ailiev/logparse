@@ -115,7 +115,7 @@ class Tests extends LogParser with FlatSpec with ShouldMatchers
   val t = for (m <- 0 until 20) yield time(10,m)
 
   "flatten" should "work" in {
-    flatten(List(S1("s1", t(0), t(1), Nil))
+    LogParser.flatten(List(S1("s1", t(0), t(1), Nil))
         ) should equal (List(List(S1("s1", t(0), t(1), Nil))))
 
     val s3_1 = S3("s3_1", t(2),  t(3))
@@ -125,7 +125,7 @@ class Tests extends LogParser with FlatSpec with ShouldMatchers
     val s1_1 = S1("s1",   t(0),  t(9),  List(s2))
     val s1_2 = S1("s1",   t(10), t(15), List(s2_2))
 
-    flatten(List(s1_1, s1_2)
+    LogParser.flatten(List(s1_1, s1_2)
     ) should equal (
         List(List(s1_1),
             List(s2, s1_1),

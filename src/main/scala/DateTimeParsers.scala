@@ -3,6 +3,9 @@ import org.joda.time.format.DateTimeFormatter
 import org.joda.time.DateTime
 import org.joda.time.MutableDateTime
 
+/** Parsers which use a Joda time DateTimeFormatter to parse text into a
+ * DateTime object.
+ */
 trait DateTimeParsers extends Parsers
 {
   implicit def datetime(format: DateTimeFormatter): Parser[DateTime] = new Parser[DateTime] {

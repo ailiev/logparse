@@ -8,6 +8,7 @@
 10:24 [some stuff] - => the second h1
 10:27 [some stuff] - some more filler
 10:24 [some stuff] - => inside h1
+10:24 [some stuff] - stray-h3:
 10:24 [some stuff] - ==
 10:24 [some stuff] - [==] the first h2
 10:27 [some stuff] - some more filler

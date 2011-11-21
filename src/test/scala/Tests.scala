@@ -137,6 +137,14 @@ class Tests extends LogParser with FlatSpec with ShouldMatchers
     )
   }
 
+  "Unbalanced h1's" should "produce an error" in {
+    implicit val parserToTest = s1
+
+    parsing("""12:45 [some stuff] - =>some h1
+12:47 [some stuff] - =<another h1
+""") should equal(null)
+  }
+
 }
 
 

@@ -74,9 +74,9 @@ trait LogParser extends RegexParsers with DateTimeParsers
   val stray_h3 = h3
   lazy val s1_child : Parser[Section] = s1 | s2 // note not s3
   val s1 = ((h1) <~ ((genline|stray_h3)*)) ~ (s1_child*) ~ h1_end <~ (genline*) ^^
-            { case ((t,title)) ~ s2s ~ ((t_end,title_end)) =>
-              if (title_end != title) throw new RuntimeException("Parse error")
-              else S1(title, t, t_end, s2s) }
+      { case ((t,title)) ~ s2s ~ ((t_end,title_end)) =>
+          if (title_end != title) throw new RuntimeException("Parse error")
+          else S1(title, t, t_end, s2s) }
 
 
   val all = (genline*) ~> (s1+) <~ (genline*)

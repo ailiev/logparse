@@ -7,7 +7,7 @@ import org.joda.time.{DateTime,MutableDateTime}
 import org.joda.time.format.DateTimeFormatter
 import org.joda.time.Period
 import org.joda.time.Duration
-import scala.util.parsing.input.Positional
+import scala.util.parsing.input.{Position}
 
 sealed abstract class Section{val name:String; val start:DateTime; val end:DateTime}
 /** section 1 */
@@ -73,16 +73,23 @@ trait LogParser extends RegexParsers with DateTimeParsers
       { case t ~ title => (t, title) }
   val stray_h3 = h3
   lazy val s1_child : Parser[Section] = s1 | s2 // note not s3
-  val s1 = ((h1) <~ ((genline|stray_h3)*)) ~ (s1_child*) ~ h1_end <~ (genline*) >>
-      { case ((t,title)) ~ s2s ~ ((t_end,title_end)) =>
+  val s1 = ((h1) <~ ((genline|stray_h3)*)) ~ (s1_child*) ~ with_pos(h1_end) <~ (genline*) >>
+      { case ((t,title)) ~ s2s ~ (( (t_end,title_end), pos )) =>
           if (title_end == title) success (S1(title, t, t_end, s2s))
-          else err("Mismatched s1 tags: '%s' and '%s'" format (title, title_end))
+          else err("Mismatched s1 tags: '%s' and '%s' at %s" format (title, title_end, pos))
       }
 
 
-  val all = (genline*) ~> (s1+) <~ (genline*)
+  val all = (genline*) ~> (s1+)
 
   // general combinators
+
+  def with_pos[A](p:Parser[A]) = new Parser[(A,Position)] {
+    def apply(in:Input) = {
+      val pos = in.pos
+      for (a <- p(in)) yield (a,pos)
+    }
+  }
 
   def any[E] (ps:TraversableOnce[Parser[E]]) = ps.reduce(_ | _)
   def noneOf[E](ps:TraversableOnce[Parser[E]]) = not (any(ps))
